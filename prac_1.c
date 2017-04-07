@@ -103,6 +103,7 @@ dfa* dfa_get_transitionFunction(dfa *DFA)
 }
 void dfa_display(dfa *DFA)
 {
+  printf("\033[92m");
   for(int i=0;i<80;i++)
   printf("-");
   printf("\n");
@@ -150,7 +151,7 @@ void dfa_display(dfa *DFA)
   printf("-> represents intial state and * represents final state(s)\n", );
   for(int i=0;i<80;i++)
   printf("-");
-  printf("\n");
+  printf("\n\033[0m");
 
 }
 dfa* dfa_intialise()
@@ -228,11 +229,11 @@ int main()
             scanf("%s",input_string);
             int ans = accepting_engine(DFA,input_string,num);
             if(ans){
-                printf("Accepted\n" );
+                printf("\033[1;32mAccepted\n\033[0m" );
             }
             else
             {
-                printf("Rejected\n" );
+                printf("\033[1;31mRejected\n\033[0m" );
             }
           }
           else if(choice1 == 2)
