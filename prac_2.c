@@ -24,6 +24,52 @@ struct dfa{
 };
 typedef struct dfa dfa;
 
+int accepting_engine(dfa* DFA, char input_string[], int num)
+{
+    int current_state = 0;
+    int transition_exits = 0,acceptance = 1;
+    for(int i=0; i<num; i++)
+    {
+        transition_exits = 0;
+        for(int j=0; j<DFA->input_symbol_count; j++)
+        {
+          if (DFA->states[current_state]->trans[j].transition_alphabet == input_string[i])
+          {
+            current_state = DFA->states[current_state]->trans[j].transition_state;
+            transition_exits = 1;
+            break;
+          }
+        }
+        if(transition_exits == 0)
+        {
+          acceptance=0;
+          break;
+        }
+    }
+
+    if(acceptance == 1)
+    {
+        acceptance = 0;
+        for(int j=0; j<DFA->final_state_count; j++)
+        {
+            if(current_state == DFA->final_states[j])
+            {
+              acceptance = 1;
+              break;
+            }
+        }
+    }
+
+    if(acceptance == 0)
+    {
+      return 0;
+    }
+    else
+    {
+      return 1;
+    }
+}
+
 char* inputString(FILE* fp, size_t size){
     char *str;
     int ch;
@@ -272,6 +318,39 @@ dfa* generate_substring_dfa(dfa *DFA, char *string, int num)
   return DFA;
 }
 
+int ask_for_acceptance_testing(dfa* DFA)
+{
+  printf("Do you want to continue to (with) test strings for acceptance?\n");
+  int choice = 0;
+  printf("1) Yes\n");
+  printf("2) No, Please exit to DFA Generation Wizard\n");
+  scanf("%d",&choice);
+  if(choice == 1)
+  {
+    char *string = NULL;
+    printf("Enter the string to be proccesed\n");
+    fgetc(stdin); // Removing \n from input buffer.
+    string = inputString(stdin, 1);
+    int num = strlen(string);
+    int ans = accepting_engine(DFA, string, num);
+    if(ans){
+        printf("\033[1;32mAccepted\n\033[0m" );
+    }
+    else
+    {
+        printf("\033[1;31mRejected\n\033[0m" );
+    }
+    return 1;
+  }
+  else if(choice == 2)
+  {
+    return 0;
+  }
+  else
+  {
+    printf("Wrong Input please select correct option by entering option number between 1-4\n");
+  }
+}
 
 int main()
 {
@@ -294,6 +373,7 @@ int main()
       int num = strlen(suffix_string);
       DFA = generate_suffix_dfa(DFA, suffix_string, num);
       dfa_display(DFA);
+      while(ask_for_acceptance_testing(DFA));
     }
     else if(choice == 2)
     {
@@ -304,6 +384,7 @@ int main()
       int num = strlen(prefix_string);
       DFA = generate_prefix_dfa(DFA, prefix_string, num);
       dfa_display(DFA);
+      while(ask_for_acceptance_testing(DFA));
     }
     else if(choice ==3)
     {
@@ -314,6 +395,7 @@ int main()
       int num = strlen(substring_string);
       DFA = generate_substring_dfa(DFA, substring_string, num);
       dfa_display(DFA);
+      while(ask_for_acceptance_testing(DFA));
     }
     else if(choice == 4)
     {
