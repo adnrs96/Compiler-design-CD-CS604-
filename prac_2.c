@@ -12,8 +12,8 @@ struct state{
   char state_label;
   transition trans [];
 };
-
 typedef struct state state;
+
 struct dfa{
   int state_count;
   int input_symbol_count;
@@ -144,6 +144,7 @@ void dfa_display(dfa *DFA)
     }
     printf("\n");
   }
+  printf("-> represents intial state and * represents final state(s)\n");
   for(int i=0;i<80;i++)
   printf("-");
   printf("\n\033[0m");

@@ -148,7 +148,7 @@ void dfa_display(dfa *DFA)
       }
       printf("\n");
   }
-  printf("-> represents intial state and * represents final state(s)\n", );
+  printf("-> represents intial state and * represents final state(s)\n");
   for(int i=0;i<80;i++)
   printf("-");
   printf("\n\033[0m");
