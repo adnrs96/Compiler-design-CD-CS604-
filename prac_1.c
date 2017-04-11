@@ -156,19 +156,18 @@ void dfa_display(dfa *DFA)
 }
 dfa* dfa_intialise()
 {
-  int state_count,input_symbol_count,final_state_count;
+  int state_count,input_symbol_count;
   dfa *DFA;
   printf("Enter the number of states\n");
   scanf("%d",&state_count);
   printf("Enter the number of input symbol\n");
   scanf("%d",&input_symbol_count);
-  DFA = (dfa*)malloc(sizeof(dfa) + sizeof(state)*state_count + (input_symbol_count)*sizeof(transition) );
+  DFA = (dfa*)malloc(sizeof(dfa) + sizeof(void*)*state_count);
   DFA->state_count = state_count;
   DFA->input_symbol_count = input_symbol_count;
-  DFA->final_state_count = final_state_count;
   printf("Enter the number of final state set\n");
   scanf("%d",&DFA->final_state_count);
-  DFA->final_states = calloc(final_state_count, sizeof(int));
+  DFA->final_states = calloc(DFA->final_state_count, sizeof(int));
   DFA->input_alphabet = calloc(input_symbol_count, sizeof(char));
   for(int i=0; i<DFA->state_count; i++)
   {

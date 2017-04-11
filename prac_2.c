@@ -156,7 +156,7 @@ dfa* dfa_intialise(int state_count,int final_state_count)
   dfa *DFA;
   printf("Enter the number of input symbol\n");
   scanf("%d",&input_symbol_count);
-  DFA = (dfa*)malloc(sizeof(dfa) + sizeof(state)*state_count + (input_symbol_count)*sizeof(transition) );
+  DFA = (dfa*)malloc(sizeof(dfa) + sizeof(void*)*state_count);
   DFA->state_count = state_count;
   DFA->input_symbol_count = input_symbol_count;
   DFA->final_state_count = final_state_count;
