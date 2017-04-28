@@ -115,6 +115,14 @@ first_Set FIRST(cfg* CFG, char* symbol)
     new_first_set.len = 1;
     return new_first_set;
   }
+  production_rule *prod_rule1 = production_rule_for_non_terminal(CFG, symbol[0]);
+  if(prod_rule1->first_set != NULL)
+  {
+    first_Set t;
+    t.first_set = prod_rule1->first_set;
+    t.len = prod_rule1->total_first_set;
+    return t;
+  }
   int control = 1;
   while(control)
   {
@@ -126,10 +134,10 @@ first_Set FIRST(cfg* CFG, char* symbol)
         {
           first_Set temp = FIRST(CFG, prod_rule->productions[i].prod_str);
           prod_rule->productions[i].first_set = temp.first_set;
-          //printf("%c Tok %s\n", prod_rule->non_terminal, temp.first_set);
           prod_rule->productions[i].total_first_set = temp.len;
           prod_rule->first_set = (char*)realloc(prod_rule->first_set,sizeof(char)*(prod_rule->total_first_set + temp.len));
-          for(int j=prod_rule->total_first_set,k=0; j<prod_rule->total_first_set + temp.len;k++)
+          int j=prod_rule->total_first_set;
+          for(int k=0; k<temp.len;k++)
           {
             if(contains(prod_rule->first_set, prod_rule->total_first_set, prod_rule->productions[i].first_set[k]))
             {
@@ -145,7 +153,8 @@ first_Set FIRST(cfg* CFG, char* symbol)
               j++;
             }
           }
-          prod_rule->total_first_set+=temp.len;
+          prod_rule->total_first_set+=(j-prod_rule->total_first_set);
+          prod_rule->first_set = (char*)realloc(prod_rule->first_set,sizeof(char)*(prod_rule->total_first_set));
         }
       }
       //printf("Reached2\n");
@@ -156,6 +165,7 @@ first_Set FIRST(cfg* CFG, char* symbol)
       }
       //printf("Reached3\n");
       total+=prod_rule->total_first_set;
+      //printf("12 num %d str '%s'\n",total, first_set);
       control++;
       if(null_in_set(prod_rule->first_set, prod_rule->total_first_set) == 0 || control > strlen(symbol))
       control = 0;
@@ -264,21 +274,51 @@ char* inputString(char *str, FILE* fp, size_t size){
 
 void display_cfg(cfg* CFG)
 {
+  printf("\033[92m");
   for(int i=0; i<80; i++)
   printf("-");
-  printf("\t\tCFG\n");
+  printf("\n\tGrammar\n\n");
   for(int i=0; i<CFG->total_rules; i++)
   {
+    int used_space = 5;
     printf("%c -> ", CFG->prod_rules[i].non_terminal);
     for(int j=0; j<CFG->prod_rules[i].total_productions; j++)
     {
       printf("%s", CFG->prod_rules[i].productions[j].prod_str);
+      used_space+=strlen(CFG->prod_rules[i].productions[j].prod_str);
       if(j != CFG->prod_rules[i].total_productions - 1)
-      printf("|");
+      {
+        printf("|");
+        used_space++;
+      }
       else
-      printf("\n");
+      {
+        for (int spac = used_space; spac < 20; spac++)
+        printf(" ");
+        printf("First: {");
+        for(int j=0; j< CFG->prod_rules[i].total_first_set; j++)
+        {
+          printf("%c", CFG->prod_rules[i].first_set[j]);
+          if(j!=CFG->prod_rules[i].total_first_set - 1)
+          printf(", ");
+          else
+          printf(" } ");
+        }
+        printf("Follow: {");
+        for(int j=0; j<CFG->prod_rules[i].total_follow_set; j++)
+        {
+          printf("%c", CFG->prod_rules[i].follow_set[j]);
+          if(j!=CFG->prod_rules[i].total_follow_set - 1)
+          printf(", ");
+          else
+          printf(" }");
+        }
+        printf("\n");
+      }
+
     }
   }
+  printf("\033[0m");
 }
 
 cfg* initiate_cfg()
@@ -339,13 +379,14 @@ cfg* initiate_cfg()
 
 void construct_display_ll1_parsing_table(cfg* CFG)
 {
+  printf("\033[92m");
   for(int i=0; i<80; i++)
   printf("-");
-  printf("\nNon-Terminals\t\t\t\tInput Symbol\n");
+  printf("\nNon-Terminals\t\t\t\tInput Symbol\n\n");
   printf("\t\t");
   for(int i=0; i<CFG->total_terminals; i++)
   printf("%c\t\t", CFG->terminals[i]);
-  printf("$\n");
+  printf("$\n\n");
   for(int i=0; i<CFG->total_non_terminals; i++)
   {
       printf("%c\t       ", CFG->non_terminals[i]);
@@ -375,13 +416,12 @@ void construct_display_ll1_parsing_table(cfg* CFG)
       printf("%c -> %s ", CFG->non_terminals[i], prod_rule->productions[k].prod_str);
       printf("\n");
   }
-
+  printf("\033[0m");
 }
 
 int main()
 {
   cfg* CFG = initiate_cfg();
-  display_cfg(CFG);
   for(int i=0; i<CFG->total_rules; i++)
   {
     if(CFG->prod_rules[i].first_set == NULL)
@@ -389,7 +429,6 @@ int main()
       first_Set t = FIRST(CFG, &(CFG->prod_rules[i].non_terminal));
       CFG->prod_rules[i].total_first_set = t.len;
       CFG->prod_rules[i].first_set = t.first_set;
-      //printf("%s", t.first_set);
     }
   }
   for(int i=0; i<CFG->total_rules; i++)
@@ -397,11 +436,11 @@ int main()
     if(CFG->prod_rules[i].follow_set == NULL)
     {
       follow_Set t = FOLLOW(CFG, CFG->prod_rules[i].non_terminal);
-      CFG->prod_rules[i].total_first_set = t.len;
+      CFG->prod_rules[i].total_follow_set = t.len;
       CFG->prod_rules[i].follow_set = t.follow_set;
-      //printf("%s", t.follow_set);
     }
   }
+  display_cfg(CFG);
   construct_display_ll1_parsing_table(CFG);
   return 0;
 }
